@@ -55,9 +55,12 @@
     {% set build_sql = create_table_as(False, target_relation, sql) %}
   {% else %}
     {% do run_query(create_table_as(True, tmp_relation, sql)) %}
-    {% do adapter.expand_target_column_types(
-           from_relation=tmp_relation,
-           to_relation=target_relation) %}
+    {% if expand_target_column_types is not none %}
+        {{ log("Skipped expanding target column types.") }}
+    {% else %}
+        {% do adapter.expand_target_column_types(
+               from_relation=tmp_relation,
+               to_relation=target_relation) %}
     {% set dest_columns = adapter.get_columns_in_relation(target_relation) %}
     {% set build_sql = dbt_snowflake_get_incremental_sql(strategy, tmp_relation, target_relation, unique_key, dest_columns) %}
   {% endif %}
